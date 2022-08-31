@@ -17,6 +17,7 @@ pipe = StableDiffusionPipeline.from_pretrained(
 )
 
 if cuda.is_available():
+    print("using cuda")
     pipe = pipe.to("cuda")
 
 @app.route("/stable_diffusion")
@@ -24,8 +25,10 @@ def get_result():
     prompt = request.args.get("prompt")
     prompt_path = "data/" + prompt.replace(" ", "_") + ".png"
     print(prompt, prompt_path)
-    autocast = "cuda" if cuda.is_available() else "cpu"
-    with autocast(autocast):
+    if cuda.is_available():
+        with autocast("cuda"):
+            image = pipe(prompt)["sample"][0] 
+    else:
         image = pipe(prompt)["sample"][0] 
 
     image.save(prompt_path)

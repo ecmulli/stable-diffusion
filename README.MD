@@ -1,6 +1,7 @@
 # Stable Diffusion
 
-1. Create virtual environment 
+1. Clone repo
+2. Create virtual environment 
     * `cd stable-diffusion`
     * `python3 -m venv venv`
     * `source venv/bin/activate`

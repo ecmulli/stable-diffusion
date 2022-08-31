@@ -14,7 +14,7 @@ pipe = StableDiffusionPipeline.from_pretrained(
     "CompVis/stable-diffusion-v1-4", 
     scheduler=lms,
     use_auth_token=True
-)#.to("cuda")
+).to("cuda")
 
 @app.route("/stable_diffusion", )
 def get_result():

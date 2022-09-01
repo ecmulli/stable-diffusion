@@ -1,8 +1,13 @@
 from flask import Flask, request, send_file
 from torch import autocast, cuda
+import torch, os
 from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 app = Flask(__name__)
 
+access_token = "enter access token"
+
+
+    
 # this will substitute the default PNDM scheduler for K-LMS  
 lms = LMSDiscreteScheduler(
     beta_start=0.00085, 
@@ -13,7 +18,8 @@ lms = LMSDiscreteScheduler(
 pipe = StableDiffusionPipeline.from_pretrained(
     "CompVis/stable-diffusion-v1-4", 
     scheduler=lms,
-    use_auth_token=True
+    torch_dtype=torch.float16,
+    use_auth_token=access_token
 )
 
 if cuda.is_available():
@@ -23,7 +29,7 @@ if cuda.is_available():
 @app.route("/stable_diffusion")
 def get_result():
     prompt = request.args.get("prompt")
-    prompt_path = "data/" + prompt.replace(" ", "_") + ".png"
+    prompt_path = os.path.join(root_dir(), "data",prompt.replace(" ", "_") + ".png")
     print(prompt, prompt_path)
     if cuda.is_available():
         with autocast("cuda"):
@@ -32,8 +38,12 @@ def get_result():
         image = pipe(prompt)["sample"][0] 
 
     image.save(prompt_path)
-
+    torch.cuda.empty_cache()
+    
     return send_file(prompt_path, mimetype='image/png')
 
+def root_dir():
+    return os.path.abspath(os.path.dirname(__file__))
+    
 if __name__=="__main__":
-    app.run(debug = True)
+    app.run(host="127.0.0.1", port="5555",debug = True)
